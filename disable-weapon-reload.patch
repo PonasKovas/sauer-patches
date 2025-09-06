@@ -1,0 +1,34 @@
+# /cheats command disables weapon reload and lets you fire extremely fast, and also does not use your ammunition
+# AFAIK most servers have anticheat for this so most of these shots will not kill other players (or be even visible to them probably)
+# but you can use the recoil to fly around :D
+--- original/fpsgame/weapon.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/fpsgame/weapon.cpp	2021-03-22 10:36:07.639172400 +0200
+@@ -3,6 +3,10 @@
+ 
+ namespace game
+ {
++
++    bool cheats_enabled = false;
++    ICOMMAND(cheats, "", (), { cheats_enabled = !cheats_enabled; });
++
+     static const int MONSTERDAMAGEFACTOR = 4;
+     static const int OFFSETMILLIS = 500;
+     vec rays[MAXRAYS];
+@@ -775,7 +779,7 @@
+     void shoot(fpsent *d, const vec &targ)
+     {
+         int prevaction = d->lastaction, attacktime = lastmillis-prevaction;
+-        if(attacktime<d->gunwait) return;
++        if(attacktime<d->gunwait && (!cheats_enabled || d!=player1)) return;
+         d->gunwait = 0;
+         if((d==player1 || d->ai) && !d->attacking) return;
+         d->lastaction = lastmillis;
+@@ -791,7 +795,7 @@
+             }
+             return;
+         }
+-        if(d->gunselect) d->ammo[d->gunselect]--;
++        if(d->gunselect && (!cheats_enabled || d!=player1)) d->ammo[d->gunselect]--;
+ 
+         vec from = d->o, to = targ, dir = vec(to).sub(from).safenormalize();
+         float dist = to.dist(from);

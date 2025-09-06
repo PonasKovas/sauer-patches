@@ -1,0 +1,36 @@
+# Idk what this is. 
+--- original/engine/sound.cpp	2021-08-30 06:17:14.000000000 +0300
++++ mod/engine/sound.cpp	2020-11-30 03:47:28.000000000 +0200
+@@ -172,7 +172,6 @@
+ {
+     static string fallback = "";
+     static bool initfallback = true;
+-    static bool restorefallback = false;
+     if(initfallback)
+     {
+         initfallback = false;
+@@ -184,7 +183,6 @@
+         explodelist(audiodriver, drivers);
+         loopv(drivers)
+         {
+-            restorefallback = true;
+             SDL_setenv("SDL_AUDIODRIVER", drivers[i], 1);
+             if(SDL_InitSubSystem(SDL_INIT_AUDIO) >= 0)
+             {
+@@ -194,15 +192,7 @@
+         }
+         drivers.deletearrays();
+     }
+-    if(restorefallback)
+-    {
+-        restorefallback = false;
+-    #ifdef WIN32
+-        SDL_setenv("SDL_AUDIODRIVER", fallback, 1);
+-    #else
+-        unsetenv("SDL_AUDIODRIVER");
+-    #endif
+-    }
++    SDL_setenv("SDL_AUDIODRIVER", fallback, 1);
+     if(SDL_InitSubSystem(SDL_INIT_AUDIO) >= 0) return true;
+     conoutf(CON_ERROR, "sound init failed: %s", SDL_GetError());
+     return false;

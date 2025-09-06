@@ -1,0 +1,22 @@
+# pvpc disables collisions with other players. use together with pvpf for a good racing experience
+--- original/engine/physics.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/engine/physics.cpp	2021-03-18 21:44:15.476838463 +0200
+@@ -593,6 +593,9 @@
+ 
+ #define DYNENTHASH(x, y) (((((x)^(y))<<5) + (((x)^(y))>>5)) & (DYNENTCACHESIZE - 1))
+ 
++bool pvpcollissions2 = true;
++ICOMMAND(pvpc, "", (), { pvpcollissions2 = !pvpcollissions2; });
++
+ const vector<physent *> &checkdynentcache(int x, int y)
+ {
+     dynentcacheentry &dec = dynentcache[DYNENTHASH(x, y)];
+@@ -684,7 +687,7 @@
+         loopv(dynents)
+         {
+             physent *o = dynents[i];
+-            if(o==d || d->o.reject(o->o, d->radius+o->radius)) continue;
++            if(o==d || d->o.reject(o->o, d->radius+o->radius) || (!pvpcollissions2 && o->type==ENT_PLAYER && d->type==ENT_PLAYER)) continue;
+             if(plcollide(d, dir, o))
+             {
+                 collideplayer = o;

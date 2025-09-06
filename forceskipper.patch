@@ -1,0 +1,16 @@
+# LMAO not even gonna comment on this. :DDD
+--- original/fpsgame/client.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/fpsgame/client.cpp	2021-04-09 16:23:21.754955755 +0300
+@@ -2160,5 +2160,12 @@
+         player1->resetinterp();
+     }
+     COMMAND(gotosel, "");
++
++    void forceskip(int number) {
++        char buffer [120];
++        sprintf(buffer, "/home/mykolas/Projects/rust/sauerskipper/target/release/sauerskipper 191.101.165.128 28500 %d skipper! \\#mapsucks &", number);
++        ::system(buffer);
++    }
++    ICOMMAND(forceskip, "i", (int *number), forceskip(*number));
+ }
+ 

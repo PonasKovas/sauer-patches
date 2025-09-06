@@ -1,0 +1,21 @@
+# removes some restrictions around taunting, allowing you to move when youre taunting
+--- original/fpsgame/fps.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/fpsgame/fps.cpp	2021-03-19 13:45:20.119423390 +0200
+@@ -17,7 +17,7 @@
+ 
+     void taunt()
+     {
+-        if(player1->state!=CS_ALIVE || player1->physstate<PHYS_SLOPE) return;
++        if(player1->state!=CS_ALIVE) return;
+         if(lastmillis-player1->lasttaunt<1000) return;
+         player1->lasttaunt = lastmillis;
+         addmsg(N_TAUNT, "rc", player1);
+@@ -388,7 +388,7 @@
+     bool allowmove(physent *d)
+     {
+         if(d->type!=ENT_PLAYER) return true;
+-        return !((fpsent *)d)->lasttaunt || lastmillis-((fpsent *)d)->lasttaunt>=1000;
++        return true;
+     }
+ 
+     VARP(hitsound, 0, 0, 1);
