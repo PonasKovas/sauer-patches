@@ -1,0 +1,14 @@
+# nadejump
+# there was another change which i had to manually remove from this patch
+# unfortunately because it contained racial slurs
+--- original/fpsgame/game.h	2020-11-30 03:47:28.000000000 +0200
++++ mod/fpsgame/game.h	2025-02-27 21:31:17.787700274 +0200
+@@ -844,6 +844,8 @@
+     extern int chooserandomplayermodel(int seed);
+     extern void swayhudgun(int curtime);
+     extern vec hudgunorigin(int gun, const vec &from, const vec &to, fpsent *d);
++
++    extern void nadejump_hook();
+ }
+ 
+ namespace server

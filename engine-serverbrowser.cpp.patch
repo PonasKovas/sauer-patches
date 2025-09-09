@@ -1,0 +1,77 @@
+# favorite servers
+--- original/engine/serverbrowser.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/engine/serverbrowser.cpp	2025-02-27 22:19:58.628192304 +0200
+@@ -1,6 +1,7 @@
+ // serverbrowser.cpp: eihrul's concurrent resolver, and server browser window management
+ 
+ #include "engine.h"
++#include <cstring>
+ 
+ struct resolverthread
+ {
+@@ -274,10 +275,11 @@
+     vector<int> attr;
+     ENetAddress address;
+     bool keep;
++    bool favorite;
+     const char *password;
+ 
+     serverinfo()
+-        : port(-1), numplayers(0), resolved(UNRESOLVED), keep(false), password(NULL)
++        : port(-1), numplayers(0), resolved(UNRESOLVED), keep(false), favorite(false), password(NULL)
+     {
+         name[0] = map[0] = sdesc[0] = '\0';
+         clearpings();
+@@ -338,6 +340,7 @@
+              bc = server::servercompatible(b->name, b->sdesc, b->map, b->ping, b->attr, b->numplayers);
+         if(ac > bc) return true;
+         if(bc > ac) return false;
++        if(a->favorite != b->favorite) return a->favorite;
+         if(a->keep > b->keep) return true;
+         if(a->keep < b->keep) return false;
+         if(a->numplayers < b->numplayers) return false;
+@@ -356,6 +359,17 @@
+ ENetSocket pingsock = ENET_SOCKET_NULL;
+ int lastinfo = 0;
+ 
++vector<const char*> favorite_servers;
++
++void addfavserver(const char *description)
++{
++    if(!description[0]) { conoutf(CON_ERROR, "you must specify a description"); return; }
++    char* desc = new char[260];
++    strcpy(desc, description);
++    favorite_servers.add(desc);
++}
++COMMAND(addfavserver, "s");
++
+ static serverinfo *newserver(const char *name, int port, uint ip = ENET_HOST_ANY)
+ {
+     serverinfo *si = new serverinfo;
+@@ -529,6 +543,15 @@
+         filtertext(si->map, text, false);
+         getstring(text, p);
+         filtertext(si->sdesc, text, true, true);
++
++        // mark as favorite if matches any favorite descriptions
++        si->favorite = false;
++        loopv(favorite_servers)
++        {
++            if(strcmp(favorite_servers[i], si->sdesc) == 0) {
++                si->favorite = true;
++            }
++        }
+     }
+ }
+ 
+@@ -583,8 +606,8 @@
+                 if(!i && j+1 - start >= pagemin && (j+1 - start >= pagemax || cgui->shouldtab())) { end = j; break; }
+                 serverinfo &si = *servers[j];
+                 const char *sdesc = si.sdesc;
+-                if(si.address.host == ENET_HOST_ANY) sdesc = "[unknown host]";
+-                else if(si.ping == serverinfo::WAITING) sdesc = "[waiting for response]";
++                if(si.address.host == ENET_HOST_ANY) sdesc = "[unknown nigga host]";
++                else if(si.ping == serverinfo::WAITING) sdesc = "[waiting for nigga response]";
+                 if(game::serverinfoentry(cgui, i, si.name, si.port, sdesc, si.map, sdesc == si.sdesc ? si.ping : -1, si.attr, si.numplayers))
+                     sc = &si;
+             }

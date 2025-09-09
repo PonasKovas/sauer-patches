@@ -1,0 +1,48 @@
+# autoshoot and nadejump
+--- original/fpsgame/fps.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/fpsgame/fps.cpp	2025-02-25 23:40:58.663352470 +0200
+@@ -235,6 +235,8 @@
+         }
+     }
+ 
++    VARP(autoshoot, 0, 0, 1);
++
+     void updateworld()        // main game update loop
+     {
+         if(!maptime) { maptime = lastmillis; maprealtime = totalmillis; return; }
+@@ -276,6 +278,23 @@
+                     if(m_classicsp) entities::checktriggers();
+                 }
+                 else if(cmode) cmode->checkitems(player1);
++
++                if(player1->state == CS_ALIVE && autoshoot)
++                {
++                    static bool started = false;
++
++                    fpsent *point = pointatplayer();
++                    if(point && point->state == CS_ALIVE && !isteam(player1->team, point->team))
++                    {
++                        started = true;
++                        player1->attacking = true;
++                    }
++                    else if(started)
++                    {
++                        player1->attacking = false;
++                        started = false;
++                    }
++                }
+             }
+         }
+         if(player1->clientnum>=0) c2sinfo();   // do this last, to reduce the effective frame lag
+@@ -692,7 +711,10 @@
+         if(d->type==ENT_INANIMATE) return;
+         if     (waterlevel>0) { if(material!=MAT_LAVA) playsound(S_SPLASH1, d==player1 ? NULL : &d->o); }
+         else if(waterlevel<0) playsound(material==MAT_LAVA ? S_BURN : S_SPLASH2, d==player1 ? NULL : &d->o);
+-        if     (floorlevel>0) { if(d==player1 || d->type!=ENT_PLAYER || ((fpsent *)d)->ai) msgsound(S_JUMP, d); }
++        if     (floorlevel>0) { if(d==player1 || d->type!=ENT_PLAYER || ((fpsent *)d)->ai) {
++            msgsound(S_JUMP, d);
++            if(d==player1) nadejump_hook();
++        } }
+         else if(floorlevel<0) { if(d==player1 || d->type!=ENT_PLAYER || ((fpsent *)d)->ai) msgsound(S_LAND, d); }
+     }
+ 

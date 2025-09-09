@@ -1,0 +1,97 @@
+# posdrop, ping and nadejumping utilities
+--- original/fpsgame/client.cpp	2020-11-30 03:47:28.000000000 +0200
++++ mod/fpsgame/client.cpp	2025-02-26 00:01:27.355367567 +0200
+@@ -930,8 +930,12 @@
+ 
+     ICOMMAND(servcmd, "C", (char *cmd), addmsg(N_SERVCMD, "rs", cmd));
+ 
++    VARP(posdrop, 0, 0, 100);
++
+     static void sendposition(fpsent *d, packetbuf &q)
+     {
++        if(posdrop > rnd(100)) return;
++
+         putint(q, N_POS);
+         putuint(q, d->clientnum);
+         // 3 bits phys state, 1 bit life sequence, 2 bits move, 2 bits strafe
+@@ -1045,6 +1049,7 @@
+         {
+             putint(p, N_PING);
+             putint(p, totalmillis);
++
+             lastping = totalmillis;
+         }
+         sendclientpacket(p.finalize(), 1);
+@@ -1246,6 +1251,8 @@
+ 
+     extern int deathscore;
+ 
++    VARP(ping, -1, -1, INT_MAX);
++
+     void parsemessages(int cn, fpsent *d, ucharbuf &p)
+     {
+         static char text[MAXTRANS];
+@@ -1757,8 +1764,16 @@
+             }
+ 
+             case N_PONG:
+-                addmsg(N_CLIENTPING, "i", player1->ping = (player1->ping*5+totalmillis-getint(p))/6);
++            {
++                int val = getint(p);
++                if(ping >= 0)
++                    player1->ping = ping;
++                else
++                    player1->ping = (player1->ping*5+totalmillis-val)/6;
++
++                addmsg(N_CLIENTPING, "i", player1->ping);
+                 break;
++            }
+ 
+             case N_CLIENTPING:
+                 if(!d) return;
+@@ -2160,5 +2175,45 @@
+         player1->resetinterp();
+     }
+     COMMAND(gotosel, "");
++
++    void setattack(int* on) {
++        game::doattack(*on);
++    }
++    COMMAND(setattack, "i");
++
++    void setjumping(int* on) {
++        player1->jumping = *on;
++    }
++    COMMAND(setjumping, "i");
++
++    float old_pitch_for_reset = 0;
++    void setpitch(float* pitch)
++    {
++        old_pitch_for_reset = player1->pitch;
++        player1->pitch = *pitch;
++    }
++    COMMAND(setpitch, "f");
++    void resetpitch() {
++        player1->pitch = old_pitch_for_reset;
++    }
++    COMMAND(resetpitch, "");
++
++
++    bool nadejumping = false;
++    void nadejump() {
++        player1->jumping = true;
++        nadejumping = true;
++    }
++    COMMAND(nadejump, "");
++    void nadejump_hook() {
++        if(!nadejumping) return;
++        nadejumping = false;
++
++        // this hook gets called right after the player jumps
++        float p = -90.0;
++        setpitch(&p);
++        player1->jumping = false;
++        execute("sleep 10 [ setattack 1 ; setjumping 0 ] ; sleep 100 [ setattack 0 ; resetpitch ]");
++    }
+ }
+ 
